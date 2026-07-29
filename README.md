@@ -7,7 +7,7 @@ Pooled particle and visual-effect lifecycle components.
 OpenUPM 등록 전에는 Package Manager의 **Add package from git URL**에서 다음 주소를 사용합니다.
 
 ```text
-https://github.com/jeomseon0516/Unity.VFX.git#v0.1.0
+https://github.com/jeomseon0516/Unity.VFX.git#v0.1.1
 ```
 
 ## 리팩토링 방침

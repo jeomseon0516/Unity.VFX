@@ -1,0 +1,6 @@
+{
+  "name": "Jeomseon.Unity.VFX.Samples.BasicUsage",
+  "references": [
+    "Jeomseon.Unity.VFX"
+  ]
+}

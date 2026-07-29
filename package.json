@@ -1,0 +1,24 @@
+{
+  "name": "com.jeomseon.unity.vfx",
+  "version": "0.1.0",
+  "displayName": "Jeomseon Unity VFX",
+  "description": "Pooled particle and visual-effect lifecycle components.",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.jeomseon.unity.singleton": "0.1.0"
+  },
+  "author": {
+    "name": "jeomseon0516",
+    "url": "https://github.com/jeomseon0516"
+  },
+  "keywords": [
+    "jeomseon",
+    "unity",
+    "vfx"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeomseon0516/Unity.VFX.git"
+  }
+}

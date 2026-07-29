@@ -1,6 +1,6 @@
 {
   "name": "com.jeomseon.unity.vfx",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "Jeomseon Unity VFX",
   "description": "Pooled particle and visual-effect lifecycle components.",
   "unity": "2022.3",

@@ -1,4 +1,4 @@
-namespace Jeomseon.PackageNotes
+namespace Jeomseon.VFX
 {
     internal static class PackageArchitectureNotes
     {

@@ -18,9 +18,16 @@ namespace Jeomseon.VFX
         // prefab -> caps
         private readonly Dictionary<GameObject, (int prewarm, int max)> _caps = new();
 
+        /* TODO(P0-01, lifecycle): Singleton과 정적 접근 경로가 Domain Reload 비활성화 및 씬 전환 후
+         * 파괴된 인스턴스나 이전 풀 상태를 유지하지 않도록 검증합니다.
+         */
         protected override void Init() {}
 
         /// <summary> 프리팹별 프리웜/최대치 등록(선택) </summary>
+        /* TODO(P1-01, architecture): 자체 VFX 풀을 Jeomseon Unity GameObject Pooling 위에 구성하고,
+         * ScriptableObject 프리셋으로 프리웜·최대 용량·초과 정책을 관리하도록 개편합니다.
+         * Custom Inspector에서 prefab별 설정 충돌과 잘못된 최대 용량을 검증합니다.
+         */
         public void Configure(GameObject prefab, int prewarm, int max)
         {
             if (!prefab) return;

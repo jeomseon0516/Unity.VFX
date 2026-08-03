@@ -3,7 +3,8 @@
   "version": "0.1.2",
   "displayName": "Jeomseon Unity VFX",
   "description": "Pooled particle and visual-effect lifecycle components.",
-  "unity": "2022.3",
+  "unity": "6000.3",
+  "unityRelease": "15f1",
   "dependencies": {
     "com.jeomseon.unity.singleton": "0.1.0"
   },

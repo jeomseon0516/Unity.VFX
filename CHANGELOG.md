@@ -1,5 +1,14 @@
 # 변경 기록
 
+## [Unreleased]
+
+## [0.2.0] - 2026-08-11
+
+- **(Breaking)** 워크스페이스 명명 규칙에 맞춰 `PooledVFX.fallbackLifetime`(public 필드)을
+  `FallbackLifetime`(PascalCase)로 정리했습니다. 기존 이름을 `[FormerlySerializedAs]`로 보존해
+  기존 Scene·Prefab의 직렬화된 값은 그대로 유지되지만, 코드에서 이 필드를 직접 참조하던 외부
+  소비처가 있다면 이름을 갱신해야 합니다.
+
 ## [0.1.2] - 2026-07-29
 
 - asmdef의 `rootNamespace`와 VFX 파일 위치를 namespace에 맞게 정리했습니다.

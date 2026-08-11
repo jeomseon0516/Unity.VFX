@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Jeomseon.VFX
 {
@@ -6,7 +7,8 @@ namespace Jeomseon.VFX
     public sealed class PooledVFX : MonoBehaviour
     {
         [Tooltip("ParticleSystem이 없거나 수동형 오브젝트일 때 강제 수명(초). 0이면 비활성.")]
-        public float fallbackLifetime = 1.5f;
+        [FormerlySerializedAs("fallbackLifetime")]
+        public float FallbackLifetime = 1.5f;
 
         private bool _recycling;
 
@@ -35,9 +37,9 @@ namespace Jeomseon.VFX
                     yield return null;
                 }
             }
-            else if (fallbackLifetime > 0f)
+            else if (FallbackLifetime > 0f)
             {
-                yield return new WaitForSeconds(fallbackLifetime);
+                yield return new WaitForSeconds(FallbackLifetime);
             }
 
             VFXPool.Instance.Despawn(gameObject);

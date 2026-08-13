@@ -1,6 +1,6 @@
 {
   "name": "Jeomseon.Unity.VFX",
-  "rootNamespace": "Jeomseon.VFX",
+  "rootNamespace": "Jeomseon.Unity.VFX",
   "references": [
     "Jeomseon.Unity.Singleton"
   ],

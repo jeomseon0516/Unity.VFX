@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Jeomseon.VFX
+namespace Jeomseon.Unity.VFX
 {
     [DisallowMultipleComponent]
     public sealed class PooledVFX : MonoBehaviour

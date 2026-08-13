@@ -1,8 +1,8 @@
-using Jeomseon.Singleton;
+using Jeomseon.Unity.Singleton;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Jeomseon.VFX
+namespace Jeomseon.Unity.VFX
 {
     public sealed class VFXPool : Singleton<VFXPool>
     {

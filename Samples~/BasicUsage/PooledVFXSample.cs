@@ -1,4 +1,4 @@
-using Jeomseon.VFX;
+using Jeomseon.Unity.VFX;
 using UnityEngine;
 
 namespace Jeomseon.Samples.VFX

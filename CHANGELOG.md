@@ -1,6 +1,9 @@
 # 변경 기록
 
-## [Unreleased]
+## [0.3.0] - 2026-08-13
+
+- **(Breaking)** Runtime 네임스페이스를 패키지 규칙에 맞춰 `Jeomseon.Unity.VFX`로 변경했습니다.
+  이전 `Jeomseon.VFX` 호환 별칭은 제공하지 않습니다.
 
 ## [0.2.0] - 2026-08-11
 

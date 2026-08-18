@@ -21,7 +21,7 @@ namespace Jeomseon.Unity.VFX
         /* TODO(P0-01, lifecycle): Singleton과 정적 접근 경로가 Domain Reload 비활성화 및 씬 전환 후
          * 파괴된 인스턴스나 이전 풀 상태를 유지하지 않도록 검증합니다.
          */
-        protected override void Init() {}
+        protected override void OnSingletonInitialize() {}
 
         /// <summary> 프리팹별 프리웜/최대치 등록(선택) </summary>
         /* TODO(P1-01, architecture): 자체 VFX 풀을 Jeomseon Unity GameObject Pooling 위에 구성하고,

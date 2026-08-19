@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Jeomseon.Unity.GameObjectPooling.Configurations;
 using Jeomseon.Unity.GameObjectPooling.Registrations;
@@ -6,6 +7,7 @@ using Jeomseon.Unity.VFX;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace Jeomseon.Tests
 {
@@ -96,14 +98,14 @@ namespace Jeomseon.Tests
         [UnityTest]
         public IEnumerator UnscaledTimedLifetime_CompletesWhileTimeScaleIsZero()
         {
-            float previousTimeScale = Time.timeScale;
+            var previousTimeScale = Time.timeScale;
             try
             {
                 Time.timeScale = 0f;
                 _emitter.Initialize(VFXConfiguration.Instantiate(
                     _prefab,
                     new TimedVFXLifetimeConfiguration(0.03f, VFXTimeMode.Unscaled)));
-                VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+                var handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
 
                 yield return new WaitForSecondsRealtime(0.06f);
                 Assert.That(handle.IsValid, Is.False);
@@ -119,12 +121,13 @@ namespace Jeomseon.Tests
         {
             _prefab.AddComponent<TrailRenderer>();
             InitializePooled(ManualVFXLifetimeConfiguration.Instance);
-            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            var handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
 
-            var trailRenderer = Object.FindFirstObjectByType<TrailRenderer>(
-                FindObjectsInactive.Exclude);
+            var trailRenderer = Object.FindAnyObjectByType<TrailRenderer>(FindObjectsInactive.Exclude);
             Assert.That(trailRenderer, Is.Not.Null);
-            trailRenderer.SetPositions(new[] { Vector3.zero, Vector3.one });
+            // SetPositions only overwrites existing points and cannot grow positionCount;
+            // AddPositions is required to add new ones.
+            trailRenderer.AddPositions(new[] { Vector3.zero, Vector3.one });
             Assert.That(trailRenderer.positionCount, Is.EqualTo(2));
 
             Assert.That(handle.TryRelease(), Is.True);

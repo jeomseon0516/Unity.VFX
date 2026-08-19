@@ -2,6 +2,7 @@
   "name": "Jeomseon.Unity.VFX.Samples.BasicUsage",
   "rootNamespace": "Jeomseon.Samples.VFX",
   "references": [
-    "Jeomseon.Unity.VFX"
+    "Jeomseon.Unity.VFX",
+    "Jeomseon.Unity.GameObjectPooling"
   ]
 }

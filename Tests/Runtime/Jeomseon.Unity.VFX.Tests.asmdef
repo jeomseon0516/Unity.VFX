@@ -1,0 +1,20 @@
+{
+  "name": "Jeomseon.Unity.VFX.Tests",
+  "rootNamespace": "Jeomseon.Tests",
+  "references": [
+    "Jeomseon.Unity.VFX",
+    "Jeomseon.Unity.GameObjectPooling"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

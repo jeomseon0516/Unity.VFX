@@ -2,7 +2,7 @@
   "name": "Jeomseon.Unity.VFX",
   "rootNamespace": "Jeomseon.Unity.VFX",
   "references": [
-    "Jeomseon.Unity.Singleton"
+    "Jeomseon.Unity.GameObjectPooling"
   ],
   "autoReferenced": true,
   "noEngineReferences": false

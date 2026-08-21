@@ -42,7 +42,7 @@ namespace Jeomseon.Tests
         public IEnumerator PooledTimedLifetime_ReturnsAndInvalidatesHandle()
         {
             InitializePooled(new TimedVFXLifetimeConfiguration(0.05f, VFXTimeMode.Scaled));
-            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            var handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
 
             Assert.That(handle.IsValid, Is.True);
             yield return new WaitForSeconds(0.08f);
@@ -55,7 +55,7 @@ namespace Jeomseon.Tests
         public IEnumerator PooledTimedLifetime_ZeroDuration_HandleIsValidImmediatelyAfterSpawn()
         {
             InitializePooled(new TimedVFXLifetimeConfiguration(0f, VFXTimeMode.Scaled));
-            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            var handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
 
             Assert.That(handle.IsValid, Is.True);
             yield return null;
@@ -67,10 +67,10 @@ namespace Jeomseon.Tests
         public IEnumerator ReusedInstance_OldGenerationHandleCannotReleaseCurrentLease()
         {
             InitializePooled(ManualVFXLifetimeConfiguration.Instance);
-            VFXHandle oldHandle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            var oldHandle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
             Assert.That(oldHandle.TryRelease(), Is.True);
 
-            VFXHandle currentHandle = _emitter.Spawn(Vector3.one, Quaternion.identity);
+            var currentHandle = _emitter.Spawn(Vector3.one, Quaternion.identity);
 
             Assert.That(oldHandle.IsValid, Is.False);
             Assert.That(oldHandle.TryRelease(), Is.False);
@@ -85,7 +85,7 @@ namespace Jeomseon.Tests
             _emitter.Initialize(VFXConfiguration.Instantiate(
                 _prefab,
                 ManualVFXLifetimeConfiguration.Instance));
-            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            var handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
 
             yield return new WaitForSeconds(0.05f);
             Assert.That(handle.IsValid, Is.True);

@@ -12,9 +12,8 @@ namespace Jeomseon.Unity.VFX
         public PooledVFXProvider(
             GameObjectPoolHandle handle,
             IVFXLifetimeConfiguration lifetimeConfiguration,
-            IVFXLifetimeHandler lifetimeHandler,
             VFXPlaybackConfiguration playbackConfiguration = null)
-            : base(lifetimeConfiguration, lifetimeHandler, playbackConfiguration)
+            : base(lifetimeConfiguration, playbackConfiguration)
         {
             _handle = handle;
             _poolProvider = new ComponentPoolProvider<VFXInstance>(handle);

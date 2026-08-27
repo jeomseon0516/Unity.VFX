@@ -11,20 +11,16 @@ namespace Jeomseon.Unity.VFX
     {
         private readonly Dictionary<int, VFXInstance> _instances = new();
         private readonly IVFXLifetimeConfiguration _lifetimeConfiguration;
-        private readonly IVFXLifetimeHandler _lifetimeHandler;
         private readonly VFXPlaybackConfiguration _playbackConfiguration;
         private int _nextInstanceId;
         private bool _disposed;
 
         protected VFXProviderBase(
             IVFXLifetimeConfiguration lifetimeConfiguration,
-            IVFXLifetimeHandler lifetimeHandler,
             VFXPlaybackConfiguration playbackConfiguration)
         {
             _lifetimeConfiguration = lifetimeConfiguration ??
                 throw new ArgumentNullException(nameof(lifetimeConfiguration));
-            _lifetimeHandler = lifetimeHandler ??
-                throw new ArgumentNullException(nameof(lifetimeHandler));
             _playbackConfiguration = playbackConfiguration ??
                 VFXPlaybackConfiguration.Default;
         }
@@ -45,7 +41,6 @@ namespace Jeomseon.Unity.VFX
             {
                 uint generation = instance.BeginLease(
                     instanceId,
-                    _lifetimeHandler,
                     _lifetimeConfiguration,
                     _playbackConfiguration,
                     TryReleaseFromLifetime);

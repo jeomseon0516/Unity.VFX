@@ -11,9 +11,8 @@ namespace Jeomseon.Unity.VFX
         public InstantiatedVFXProvider(
             GameObject prefab,
             IVFXLifetimeConfiguration lifetimeConfiguration,
-            IVFXLifetimeHandler lifetimeHandler,
             VFXPlaybackConfiguration playbackConfiguration = null)
-            : base(lifetimeConfiguration, lifetimeHandler, playbackConfiguration)
+            : base(lifetimeConfiguration, playbackConfiguration)
         {
             if (!prefab) throw new ArgumentNullException(nameof(prefab));
             _prefab = prefab.TryGetComponent(out VFXInstance instance)

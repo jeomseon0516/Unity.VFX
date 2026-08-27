@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Jeomseon.Unity.GameObjectPooling.Handles;
 using Jeomseon.Unity.GameObjectPooling.Scopes;
 using UnityEngine;
@@ -12,7 +11,6 @@ namespace Jeomseon.Unity.VFX
         [SerializeField] private VFXDefinition definition;
         [SerializeField] private GameObjectPoolScope poolScope;
 
-        private readonly List<IVFXLifetimeHandler> _lifetimeHandlers = new();
         private IVFXProvider _provider;
         private bool _ownsProvider;
 
@@ -22,19 +20,6 @@ namespace Jeomseon.Unity.VFX
         {
             if (_provider != null || definition == null) return;
             Initialize(definition.CreateConfiguration());
-        }
-
-        public void RegisterLifetimeHandler(IVFXLifetimeHandler handler)
-        {
-            if (handler == null) throw new ArgumentNullException(nameof(handler));
-            if (_provider != null)
-            {
-                throw new InvalidOperationException(
-                    "Lifetime handlers must be registered before initialization.");
-            }
-
-            EnsureBuiltInLifetimeHandlers();
-            _lifetimeHandlers.Add(handler);
         }
 
         public void Initialize(VFXDefinition sourceDefinition)
@@ -51,21 +36,16 @@ namespace Jeomseon.Unity.VFX
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             EnsureNotInitialized();
-            EnsureBuiltInLifetimeHandlers();
-            IVFXLifetimeHandler lifetimeHandler = ResolveLifetimeHandler(
-                configuration.LifetimeConfiguration);
 
             _provider = configuration.ReuseMode switch
             {
                 VFXReuseMode.Instantiate => new InstantiatedVFXProvider(
                     configuration.Prefab,
                     configuration.LifetimeConfiguration,
-                    lifetimeHandler,
                     configuration.PlaybackConfiguration),
                 VFXReuseMode.Pool => new PooledVFXProvider(
                     RegisterPool(configuration),
                     configuration.LifetimeConfiguration,
-                    lifetimeHandler,
                     configuration.PlaybackConfiguration),
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -117,27 +97,6 @@ namespace Jeomseon.Unity.VFX
             }
 
             return poolScope.Register(configuration.PoolRegistration);
-        }
-
-        private IVFXLifetimeHandler ResolveLifetimeHandler(
-            IVFXLifetimeConfiguration configuration)
-        {
-            for (int i = _lifetimeHandlers.Count - 1; i >= 0; i--)
-            {
-                IVFXLifetimeHandler handler = _lifetimeHandlers[i];
-                if (handler.CanHandle(configuration)) return handler;
-            }
-
-            throw new NotSupportedException(
-                $"No VFX lifetime handler supports {configuration.GetType().FullName}.");
-        }
-
-        private void EnsureBuiltInLifetimeHandlers()
-        {
-            if (_lifetimeHandlers.Count > 0) return;
-            _lifetimeHandlers.Add(new ManualVFXLifetimeHandler());
-            _lifetimeHandlers.Add(new TimedVFXLifetimeHandler());
-            _lifetimeHandlers.Add(new ParticleCompletionVFXLifetimeHandler());
         }
 
         private void EnsureNotInitialized()

@@ -165,6 +165,14 @@ namespace Jeomseon.Unity.VFX
             {
                 // The lease ended (EndLease/OnDestroy) before the lifetime completed naturally.
             }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+                if (IsLeased)
+                {
+                    _requestRelease?.Invoke(RuntimeId, Generation);
+                }
+            }
         }
 
         private void CancelLifetime()

@@ -118,6 +118,14 @@
      `IVFXHandleOwner` 등 기반 타입 공개 범위를 다시 검토할 때도 이 원칙(native C# 계약만
      노출)을 기준으로 판단합니다.
    - 관련 경로는 최종 PlayMode 16/16에 포함되어 통과했습니다.
+   - **Kilo PR 리뷰 후속 보강 (2026-08-31).** Manual Configuration도 lease마다 독립 Session을
+     생성하도록 singleton Session을 제거했습니다. 사용자 Session의 `Tick()`이 예외를 던지면
+     예외를 Unity Console에 기록하고 해당 VFX lease를 정리하도록 `RunLifetimeAsync`에 방어를
+     추가했습니다. Instantiate 방식 Emitter 제거, Scaled 수명의 `Time.timeScale = 0`, Provider의
+     중복 `Dispose()`, Session 예외 정리 및 Manual Session 독립성을 검증하는 테스트 5개를
+     추가했습니다. 생성 Unity csproj 보조 빌드는 경고·오류 0건입니다. Unity CLI Test Runner는
+     샌드박스와 승인 환경 모두 Licensing Client 연결 실패로 테스트 시작 전에 중단돼 결과 XML이
+     생성되지 않았습니다.
 7. **완료 — Basic Usage Scene Sample 보강** (2026-08-26)
    - 런타임에 Sphere를 생성하던 구형 `VFXPoolBasicUsageSample`을 실제 one-shot ParticleSystem
      Prefab 기반 `VFXBasicUsageSample`로 교체했습니다.

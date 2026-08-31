@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Text.RegularExpressions;
 using Jeomseon.Unity.GameObjectPooling.Configurations;
 using Jeomseon.Unity.GameObjectPooling.Registrations;
 using Jeomseon.Unity.GameObjectPooling.Scopes;
@@ -100,6 +101,23 @@ namespace Jeomseon.Tests
         }
 
         [UnityTest]
+        public IEnumerator DestroyingEmitter_ReleasesActiveInstantiatedVFX()
+        {
+            _emitter.Initialize(VFXConfiguration.Instantiate(
+                _prefab,
+                ManualVFXLifetimeConfiguration.Instance));
+            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            VFXInstance instance = FindActiveVFXInstance();
+
+            Object.Destroy(_host);
+            yield return null;
+
+            Assert.That(instance, Is.Null);
+            Assert.That(handle.IsValid, Is.False);
+            Assert.That(handle.TryRelease(), Is.False);
+        }
+
+        [UnityTest]
         public IEnumerator UnscaledTimedLifetime_CompletesWhileTimeScaleIsZero()
         {
             var previousTimeScale = Time.timeScale;
@@ -118,6 +136,43 @@ namespace Jeomseon.Tests
             {
                 Time.timeScale = previousTimeScale;
             }
+        }
+
+        [UnityTest]
+        public IEnumerator ScaledTimedLifetime_RemainsActiveWhileTimeScaleIsZero()
+        {
+            float previousTimeScale = Time.timeScale;
+            try
+            {
+                Time.timeScale = 0f;
+                _emitter.Initialize(VFXConfiguration.Instantiate(
+                    _prefab,
+                    new TimedVFXLifetimeConfiguration(0.03f, VFXTimeMode.Scaled)));
+                VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+
+                yield return new WaitForSecondsRealtime(0.06f);
+
+                Assert.That(handle.IsValid, Is.True);
+                Assert.That(handle.TryRelease(), Is.True);
+            }
+            finally
+            {
+                Time.timeScale = previousTimeScale;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator LifetimeSessionException_LogsAndReleasesVFX()
+        {
+            var lifetime = new ThrowingLifetimeConfiguration();
+            _emitter.Initialize(VFXConfiguration.Instantiate(_prefab, lifetime));
+            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            LogAssert.Expect(LogType.Exception, new Regex("Lifetime tick failed"));
+
+            yield return null;
+
+            Assert.That(handle.IsValid, Is.False);
+            Assert.That(lifetime.DisposedSessionCount, Is.EqualTo(1));
         }
 
         [UnityTest]
@@ -327,6 +382,35 @@ namespace Jeomseon.Tests
         }
 
         [Test]
+        public void ManualLifetimeConfiguration_CreatesDistinctSessions()
+        {
+            var context = new VFXLifetimeContext(_prefab.GetComponent<VFXInstance>());
+
+            IVFXLifetimeSession first =
+                ManualVFXLifetimeConfiguration.Instance.CreateSession(context);
+            IVFXLifetimeSession second =
+                ManualVFXLifetimeConfiguration.Instance.CreateSession(context);
+
+            Assert.That(second, Is.Not.SameAs(first));
+        }
+
+        [Test]
+        public void ProviderDispose_IsIdempotent()
+        {
+            var provider = new InstantiatedVFXProvider(
+                _prefab,
+                ManualVFXLifetimeConfiguration.Instance);
+            VFXHandle handle = provider.Spawn(VFXSpawnOptions.At(
+                Vector3.zero,
+                Quaternion.identity));
+
+            Assert.DoesNotThrow(provider.Dispose);
+            Assert.DoesNotThrow(provider.Dispose);
+            Assert.That(handle.IsValid, Is.False);
+            Assert.That(handle.TryRelease(), Is.False);
+        }
+
+        [Test]
         public void LifetimeConfiguration_ReturningNullSession_RejectsSpawn()
         {
             _emitter.Initialize(VFXConfiguration.Instantiate(
@@ -394,6 +478,35 @@ namespace Jeomseon.Tests
         private sealed class NullSessionLifetimeConfiguration : IVFXLifetimeConfiguration
         {
             public IVFXLifetimeSession CreateSession(in VFXLifetimeContext context) => null;
+        }
+
+        private sealed class ThrowingLifetimeConfiguration : IVFXLifetimeConfiguration
+        {
+            internal int DisposedSessionCount { get; private set; }
+
+            public IVFXLifetimeSession CreateSession(in VFXLifetimeContext context) =>
+                new ThrowingSession(() => DisposedSessionCount++);
+        }
+
+        private sealed class ThrowingSession : IVFXLifetimeSession
+        {
+            private readonly Action _onDispose;
+
+            internal ThrowingSession(Action onDispose)
+            {
+                _onDispose = onDispose;
+            }
+
+            public bool Tick(
+                in VFXLifetimeContext context,
+                float deltaTime,
+                float unscaledDeltaTime) =>
+                throw new InvalidOperationException("Lifetime tick failed.");
+
+            public void Dispose()
+            {
+                _onDispose();
+            }
         }
 
         private sealed class ManualSession : IVFXLifetimeSession

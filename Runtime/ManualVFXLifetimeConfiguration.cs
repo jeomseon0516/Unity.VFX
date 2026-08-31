@@ -9,13 +9,11 @@ namespace Jeomseon.Unity.VFX
         }
 
         public IVFXLifetimeSession CreateSession(in VFXLifetimeContext context) =>
-            Session.Instance;
+            new Session();
 
         private sealed class Session : IVFXLifetimeSession
         {
-            internal static Session Instance { get; } = new();
-
-            private Session()
+            internal Session()
             {
             }
 

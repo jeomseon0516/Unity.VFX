@@ -126,6 +126,16 @@
      추가했습니다. 생성 Unity csproj 보조 빌드는 경고·오류 0건입니다. Unity CLI Test Runner는
      샌드박스와 승인 환경 모두 Licensing Client 연결 실패로 테스트 시작 전에 중단돼 결과 XML이
      생성되지 않았습니다.
+   - **Kilo 재검토 후속 보강 (2026-08-31).** GameObjectPooling에 Pool 종료 시 활성 인스턴스를
+     함께 파괴하는 기본 정책과 남기는 Preserve 정책을 추가했습니다. Preserve를 선택한 VFX는 Scope
+     종료 후에도 계속 살아 있고, 사용자가 `ManualVFXLifetimeConfiguration`과
+     `VFXHandle.TryRelease()`로 직접 종료하면 무효 Pool Handle 대신 GameObject를 파괴합니다.
+     이 연동 경로를 PlayMode 테스트로 추가했습니다. 하위 Sub Emitter 입자가 반환 시 제거되고 같은
+     인스턴스 재사용 시 남지 않는 회귀 테스트도 추가했습니다. 또한 수명 Tick 실패 후 반환 처리나
+     사용자 Session `Dispose()`까지 실패하더라도 각 예외를 기록하고 `async void` 밖으로 전파하지
+     않으며, Session 참조를 먼저 제거해 중복 Dispose하지 않도록 보강했습니다.
+     테스트 준비의 Unity Object null 비교와 Sub Emitter Emission 설정을 바로잡은 뒤, 사용자가 신규
+     3개를 포함한 **VFX PlayMode Test Runner 24개 전체 통과**를 확인했습니다.
 7. **완료 — Basic Usage Scene Sample 보강** (2026-08-26)
    - 런타임에 Sphere를 생성하던 구형 `VFXPoolBasicUsageSample`을 실제 one-shot ParticleSystem
      Prefab 기반 `VFXBasicUsageSample`로 교체했습니다.

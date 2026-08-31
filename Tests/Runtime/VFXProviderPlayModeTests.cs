@@ -112,7 +112,7 @@ namespace Jeomseon.Tests
             Object.Destroy(_host);
             yield return null;
 
-            Assert.That(instance, Is.Null);
+            Assert.That(instance == null, Is.True);
             Assert.That(handle.IsValid, Is.False);
             Assert.That(handle.TryRelease(), Is.False);
         }
@@ -176,6 +176,21 @@ namespace Jeomseon.Tests
         }
 
         [UnityTest]
+        public IEnumerator LifetimeAndReleaseExceptions_AreBothLoggedWithoutEscaping()
+        {
+            _emitter.Initialize(VFXConfiguration.Instantiate(
+                _prefab,
+                new ThrowingTickAndDisposeLifetimeConfiguration()));
+            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            LogAssert.Expect(LogType.Exception, new Regex("Lifetime tick failed"));
+            LogAssert.Expect(LogType.Exception, new Regex("Lifetime dispose failed"));
+
+            yield return null;
+
+            Assert.That(handle.IsValid, Is.False);
+        }
+
+        [UnityTest]
         public IEnumerator DestroyingEmitter_ReleasesActivePooledVFX()
         {
             var lifetime = new TrackingLifetimeConfiguration();
@@ -208,6 +223,39 @@ namespace Jeomseon.Tests
             yield return null;
 
             Assert.That(lifetime.DisposedSessionCount, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator PreservedVFX_RemainsUntilOwnerReleasesItAfterPoolIsDestroyed()
+        {
+            var poolConfiguration = new UnityGameObjectPoolConfiguration(
+                _prefab,
+                prewarmCount: 1,
+                maxInactiveCount: 2,
+                activeInstanceShutdownPolicy: ActiveInstanceShutdownPolicy.Preserve);
+            var registration = new GameObjectPoolRegistration(
+                poolConfiguration,
+                PoolLifetimeConfiguration.Scope,
+                "Preserved VFX Test Pool");
+            _emitter.Initialize(
+                VFXConfiguration.Pool(
+                    registration,
+                    ManualVFXLifetimeConfiguration.Instance),
+                _scope);
+            VFXHandle handle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+            VFXInstance instance = FindActiveVFXInstance();
+
+            Object.Destroy(_poolHost);
+            yield return null;
+
+            Assert.That(instance, Is.Not.Null);
+            Assert.That(handle.IsValid, Is.True);
+
+            Assert.That(handle.TryRelease(), Is.True);
+            yield return null;
+
+            Assert.That(instance == null, Is.True);
+            Assert.That(handle.IsValid, Is.False);
         }
 
         [UnityTest]
@@ -350,6 +398,49 @@ namespace Jeomseon.Tests
         }
 
         [Test]
+        public void ReusedInstance_StartsWithoutPreviousSubEmitterParticles()
+        {
+            ParticleSystem parent = AddParticleSystem(_prefab, loop: true, 1f, 1f);
+            ParticleSystem.EmissionModule parentEmission = parent.emission;
+            parentEmission.enabled = false;
+            var child = new GameObject("Manual Sub Emitter");
+            child.transform.SetParent(_prefab.transform, false);
+            ParticleSystem subEmitter = AddParticleSystem(child, loop: false, 1f, 1f);
+            ParticleSystem.EmissionModule subEmitterEmission = subEmitter.emission;
+            subEmitterEmission.rateOverTime = 0f;
+            subEmitterEmission.SetBursts(new[] { new ParticleSystem.Burst(0f, 1) });
+            ParticleSystem.SubEmittersModule subEmitters = parent.subEmitters;
+            subEmitters.enabled = true;
+            subEmitters.AddSubEmitter(
+                subEmitter,
+                ParticleSystemSubEmitterType.Manual,
+                ParticleSystemSubEmitterProperties.InheritNothing);
+            InitializePooled(ManualVFXLifetimeConfiguration.Instance);
+            VFXHandle firstHandle = _emitter.Spawn(Vector3.zero, Quaternion.identity);
+
+            ParticleSystem activeParent = FindActiveVFXInstance().GetComponent<ParticleSystem>();
+            var sourceParticle = new ParticleSystem.Particle
+            {
+                position = Vector3.zero,
+                startLifetime = 1f,
+                remainingLifetime = 1f,
+                startSize = 1f,
+                randomSeed = 1
+            };
+            activeParent.TriggerSubEmitter(0, ref sourceParticle);
+            ParticleSystem activeSubEmitter = activeParent.subEmitters.GetSubEmitterSystem(0);
+            Assert.That(activeSubEmitter.particleCount, Is.GreaterThan(0));
+
+            Assert.That(firstHandle.TryRelease(), Is.True);
+            Assert.That(activeSubEmitter.particleCount, Is.EqualTo(0));
+
+            VFXHandle secondHandle = _emitter.Spawn(Vector3.one, Quaternion.identity);
+
+            Assert.That(activeSubEmitter.particleCount, Is.EqualTo(0));
+            Assert.That(secondHandle.TryRelease(), Is.True);
+        }
+
+        [Test]
         public void PooledRelease_ClearsTrailRenderer()
         {
             _prefab.AddComponent<TrailRenderer>();
@@ -486,6 +577,25 @@ namespace Jeomseon.Tests
 
             public IVFXLifetimeSession CreateSession(in VFXLifetimeContext context) =>
                 new ThrowingSession(() => DisposedSessionCount++);
+        }
+
+        private sealed class ThrowingTickAndDisposeLifetimeConfiguration :
+            IVFXLifetimeConfiguration
+        {
+            public IVFXLifetimeSession CreateSession(in VFXLifetimeContext context) =>
+                new ThrowingTickAndDisposeSession();
+        }
+
+        private sealed class ThrowingTickAndDisposeSession : IVFXLifetimeSession
+        {
+            public bool Tick(
+                in VFXLifetimeContext context,
+                float deltaTime,
+                float unscaledDeltaTime) =>
+                throw new InvalidOperationException("Lifetime tick failed.");
+
+            public void Dispose() =>
+                throw new InvalidOperationException("Lifetime dispose failed.");
         }
 
         private sealed class ThrowingSession : IVFXLifetimeSession

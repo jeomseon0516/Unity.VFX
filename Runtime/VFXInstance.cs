@@ -58,8 +58,7 @@ namespace Jeomseon.Unity.VFX
             IsLeased = false;
             _requestRelease = null;
             CancelLifetime();
-            _lifetimeSession?.Dispose();
-            _lifetimeSession = null;
+            DisposeLifetimeSession();
             StopParticleSystems(playbackConfiguration.ClearOnRelease);
             return true;
         }
@@ -170,7 +169,14 @@ namespace Jeomseon.Unity.VFX
                 Debug.LogException(exception, this);
                 if (IsLeased)
                 {
-                    _requestRelease?.Invoke(RuntimeId, Generation);
+                    try
+                    {
+                        _requestRelease?.Invoke(RuntimeId, Generation);
+                    }
+                    catch (Exception releaseException)
+                    {
+                        Debug.LogException(releaseException, this);
+                    }
                 }
             }
         }
@@ -188,8 +194,23 @@ namespace Jeomseon.Unity.VFX
             IsLeased = false;
             _requestRelease = null;
             CancelLifetime();
-            _lifetimeSession?.Dispose();
+            DisposeLifetimeSession();
+        }
+
+        private void DisposeLifetimeSession()
+        {
+            IVFXLifetimeSession session = _lifetimeSession;
             _lifetimeSession = null;
+            if (session == null) return;
+
+            try
+            {
+                session.Dispose();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
         }
 
         private void PlayParticleSystems(VFXPlaybackConfiguration configuration)

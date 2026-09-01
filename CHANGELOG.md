@@ -1,6 +1,6 @@
 # 변경 기록
 
-## [Unreleased]
+## [0.4.0] - 2026-09-01
 
 - **(Breaking)** 빈 marker였던 `IVFXLifetimeConfiguration`에 lease별
   `CreateSession(in VFXLifetimeContext)` 실행 계약을 추가하고 별도 `IVFXLifetimeHandler` 계층과

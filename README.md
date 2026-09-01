@@ -6,12 +6,12 @@ ParticleSystem 효과를 생성하고, 재생이 끝난 효과를 자동으로 �
 ## 요구 사항과 설치
 
 - Unity 6000.5.7f1 이상
-- `com.jeomseon.unity.game-object-pooling` 0.3.0
+- `com.jeomseon.unity.game-object-pooling` 0.4.0
 
 Package Manager의 **Add package from git URL**에 다음 주소를 입력합니다.
 
 ```text
-https://github.com/jeomseon0516/Unity.VFX.git#v0.3.0
+https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 ```
 
 ## 주요 구성 요소

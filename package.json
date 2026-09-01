@@ -1,12 +1,12 @@
 {
   "name": "com.jeomseon.unity.vfx",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "displayName": "Jeomseon Unity VFX",
   "description": "Pooled particle and visual-effect lifecycle components.",
   "unity": "6000.5",
   "unityRelease": "7f1",
   "dependencies": {
-    "com.jeomseon.unity.game-object-pooling": "0.3.0"
+    "com.jeomseon.unity.game-object-pooling": "0.4.0"
   },
   "author": {
     "name": "jeomseon0516",

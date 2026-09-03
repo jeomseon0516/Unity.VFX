@@ -1,0 +1,22 @@
+{
+  "name": "Jeomseon.Unity.VFX.Editor.Tests",
+  "rootNamespace": "Jeomseon.Tests.Editor",
+  "references": [
+    "Jeomseon.Unity.VFX",
+    "Jeomseon.Unity.GameObjectPooling"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

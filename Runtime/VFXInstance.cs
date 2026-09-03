@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Jeomseon.Unity.GameObjectPooling.Lifecycle;
 using UnityEngine;
@@ -20,7 +21,6 @@ namespace Jeomseon.Unity.VFX
 
         internal uint BeginLease(
             int runtimeId,
-            IVFXLifetimeHandler lifetimeHandler,
             IVFXLifetimeConfiguration lifetimeConfiguration,
             VFXPlaybackConfiguration playbackConfiguration,
             Action<int, uint> requestRelease)
@@ -42,8 +42,9 @@ namespace Jeomseon.Unity.VFX
             PlayParticleSystems(playbackConfiguration);
 
             var context = new VFXLifetimeContext(this);
-            _lifetimeSession = lifetimeHandler.Begin(lifetimeConfiguration, context) ??
-                throw new InvalidOperationException("The VFX lifetime handler returned null.");
+            _lifetimeSession = lifetimeConfiguration.CreateSession(context) ??
+                throw new InvalidOperationException(
+                    "The VFX lifetime configuration returned a null session.");
             _lifetimeCancellation = CancellationTokenSource.CreateLinkedTokenSource(
                 destroyCancellationToken);
             RunLifetimeAsync(_lifetimeCancellation.Token);
@@ -57,8 +58,7 @@ namespace Jeomseon.Unity.VFX
             IsLeased = false;
             _requestRelease = null;
             CancelLifetime();
-            _lifetimeSession?.Dispose();
-            _lifetimeSession = null;
+            DisposeLifetimeSession();
             StopParticleSystems(playbackConfiguration.ClearOnRelease);
             return true;
         }
@@ -126,11 +126,12 @@ namespace Jeomseon.Unity.VFX
 
         private void ResetAnimator()
         {
-            Animator animator = GetComponentInChildren<Animator>(includeInactive: true);
-            if (!animator) return;
-
-            animator.Rebind();
-            animator.Update(0f);
+            foreach (Animator animator in GetComponentsInChildren<Animator>(includeInactive: true))
+            {
+                if (!animator) continue;
+                animator.Rebind();
+                animator.Update(0f);
+            }
         }
 
         private async void RunLifetimeAsync(CancellationToken cancellationToken)
@@ -147,7 +148,7 @@ namespace Jeomseon.Unity.VFX
                 {
                     // Unlike a Coroutine, this loop keeps running while the GameObject is inactive.
                     // Skip ticking in that case so an externally deactivated instance can't be read
-                    // as "particles finished" by ParticleCompletionVFXLifetimeHandler merely because
+                    // as "particles finished" by the particle-completion session merely because
                     // simulation is paused.
                     if (isActiveAndEnabled &&
                         _lifetimeSession.Tick(context, Time.deltaTime, Time.unscaledDeltaTime))
@@ -163,6 +164,21 @@ namespace Jeomseon.Unity.VFX
             {
                 // The lease ended (EndLease/OnDestroy) before the lifetime completed naturally.
             }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+                if (IsLeased)
+                {
+                    try
+                    {
+                        _requestRelease?.Invoke(RuntimeId, Generation);
+                    }
+                    catch (Exception releaseException)
+                    {
+                        Debug.LogException(releaseException, this);
+                    }
+                }
+            }
         }
 
         private void CancelLifetime()
@@ -175,11 +191,31 @@ namespace Jeomseon.Unity.VFX
 
         private void OnDestroy()
         {
+            IsLeased = false;
+            _requestRelease = null;
             CancelLifetime();
+            DisposeLifetimeSession();
+        }
+
+        private void DisposeLifetimeSession()
+        {
+            IVFXLifetimeSession session = _lifetimeSession;
+            _lifetimeSession = null;
+            if (session == null) return;
+
+            try
+            {
+                session.Dispose();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
         }
 
         private void PlayParticleSystems(VFXPlaybackConfiguration configuration)
         {
+            HashSet<ParticleSystem> subEmitterSystems = CollectSubEmitterSystems();
             foreach (ParticleSystem particleSystem in _particleSystems)
             {
                 if (!particleSystem) continue;
@@ -190,8 +226,28 @@ namespace Jeomseon.Unity.VFX
                     particleSystem.Clear(withChildren: false);
                 }
 
-                particleSystem.Play(withChildren: false);
+                if (!subEmitterSystems.Contains(particleSystem))
+                {
+                    particleSystem.Play(withChildren: false);
+                }
             }
+        }
+
+        private HashSet<ParticleSystem> CollectSubEmitterSystems()
+        {
+            var result = new HashSet<ParticleSystem>();
+            foreach (ParticleSystem particleSystem in _particleSystems)
+            {
+                if (!particleSystem) continue;
+                ParticleSystem.SubEmittersModule subEmitters = particleSystem.subEmitters;
+                for (int index = 0; index < subEmitters.subEmittersCount; index++)
+                {
+                    ParticleSystem subEmitter = subEmitters.GetSubEmitterSystem(index);
+                    if (subEmitter) result.Add(subEmitter);
+                }
+            }
+
+            return result;
         }
 
         private void StopParticleSystems(bool clearParticles)

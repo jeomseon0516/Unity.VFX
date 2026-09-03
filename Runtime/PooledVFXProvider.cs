@@ -1,6 +1,7 @@
 using Jeomseon.Unity.GameObjectPooling.Contracts;
 using Jeomseon.Unity.GameObjectPooling.Handles;
 using Jeomseon.Unity.GameObjectPooling.Providers;
+using UnityEngine;
 
 namespace Jeomseon.Unity.VFX
 {
@@ -12,9 +13,8 @@ namespace Jeomseon.Unity.VFX
         public PooledVFXProvider(
             GameObjectPoolHandle handle,
             IVFXLifetimeConfiguration lifetimeConfiguration,
-            IVFXLifetimeHandler lifetimeHandler,
             VFXPlaybackConfiguration playbackConfiguration = null)
-            : base(lifetimeConfiguration, lifetimeHandler, playbackConfiguration)
+            : base(lifetimeConfiguration, playbackConfiguration)
         {
             _handle = handle;
             _poolProvider = new ComponentPoolProvider<VFXInstance>(handle);
@@ -32,7 +32,13 @@ namespace Jeomseon.Unity.VFX
 
         protected override void ReleaseInstance(VFXInstance instance)
         {
-            if (_handle.IsValid) _poolProvider.Despawn(instance);
+            if (_handle.IsValid)
+            {
+                _poolProvider.Despawn(instance);
+                return;
+            }
+
+            if (instance) Object.Destroy(instance.gameObject);
         }
     }
 }

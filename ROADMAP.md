@@ -151,4 +151,7 @@
      초기화 규칙, 오류 조건, 흔한 오용과 0.x 이전 방법을 실제 API에 맞춰 동등하게 기록했습니다.
    - Basic Usage 안내에 Import 절차와 Domain Reload 비활성화 반복 실행 결과를 기록했습니다.
    - 현재 Unity 6000.5.7f1 Sample의 `ScriptableObject Configuration` Inspector를 직접 캡처해
-     `Documentation~/Images`에 보관하고 한·영 README 및 Sample 안내에서 참조했습니다.
+   `Documentation~/Images`에 보관하고 한·영 README 및 Sample 안내에서 참조했습니다.
+9. **완료 — Unity 6000.6 + URP 17.6 Sample 육안 검증** (2026-09-03)
+   - `SampleVFXMaterial`을 `Sprites/Default`로 이전한 뒤 `VFXBasicUsageSample` Play Mode에서 좌우
+     청록색 파티클이 정상 표시되고 반복 생성·반환되는 것을 사용자가 확인했습니다.

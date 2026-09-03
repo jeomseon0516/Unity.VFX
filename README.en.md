@@ -5,7 +5,7 @@ It supports runtime code configuration and Inspector configuration through Scrip
 
 ## Requirements and installation
 
-- Unity 6000.5.7f1 or later
+- Unity 6000.6.0f1 or later
 - `com.jeomseon.unity.game-object-pooling` 0.4.0
 
 Enter this URL in Package Manager's **Add package from git URL** dialog:

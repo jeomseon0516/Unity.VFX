@@ -1,5 +1,15 @@
 # 변경 기록
 
+## [Unreleased]
+
+- **(렌더 파이프라인)** 워크스페이스 Unity `6000.6` + URP `17.6` 전환. 패키지 런타임은
+  `ParticleSystem` 기반이라 셰이더·SRP 코드가 없어 코드 변경은 없습니다.
+- Basic Usage 샘플의 `SampleVFXMaterial.mat`이 Built-in `Particles/Standard Unlit`(shader fileID
+  211)을 참조해 URP에서 magenta로 렌더되던 문제를 고쳤습니다. 파이프라인 비종속인 `Sprites/Default`
+  (fileID 10753)로 바꿔 파티클 vertex color를 그대로 표시합니다. Unity 6000.6 + URP 17.6 Play
+  Mode에서 좌우 청록색 파티클의 반복 생성·반환을 확인했습니다.
+- `package.json` 최소 Unity 버전 `6000.6.0f1`.
+
 ## [0.4.0] - 2026-09-01
 
 - **(Breaking)** 빈 marker였던 `IVFXLifetimeConfiguration`에 lease별

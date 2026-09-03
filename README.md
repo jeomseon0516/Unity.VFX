@@ -3,12 +3,35 @@
 ParticleSystem 효과를 생성하고, 재생이 끝난 효과를 자동으로 정리하거나 풀에 반환하는 Unity 패키지입니다.
 코드 설정과 ScriptableObject를 이용한 Inspector 설정을 모두 제공합니다.
 
-## 요구 사항과 설치
+## 요구 사항
 
 - Unity 6000.6.0f1 이상
-- `com.jeomseon.unity.game-object-pooling` 0.4.0
+- `com.jeomseon.unity.game-object-pooling` 0.4.0 이상 (`package.json`이 의존성으로 선언)
 
-Package Manager의 **Add package from git URL**에 다음 주소를 입력합니다.
+## OpenUPM으로 설치
+
+프로젝트의 `Packages/manifest.json`에 OpenUPM scoped registry를 한 번 등록합니다.
+
+```json
+{
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.jeomseon"
+      ]
+    }
+  ],
+  "dependencies": {
+    "com.jeomseon.unity.vfx": "0.4.0"
+  }
+}
+```
+
+## Git URL로 설치
+
+Unity Package Manager의 `Install package from git URL`에 다음 주소를 사용합니다.
 
 ```text
 https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0

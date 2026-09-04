@@ -3,12 +3,35 @@
 A Unity package that spawns ParticleSystem effects and automatically cleans them up or returns them to a pool.
 It supports runtime code configuration and Inspector configuration through ScriptableObject assets.
 
-## Requirements and installation
+## Requirements
 
 - Unity 6000.6.0f1 or later
-- `com.jeomseon.unity.game-object-pooling` 0.4.0
+- `com.jeomseon.unity.game-object-pooling` 0.4.0 or newer (declared as a dependency in `package.json`)
 
-Enter this URL in Package Manager's **Add package from git URL** dialog:
+## Install via OpenUPM
+
+Register the OpenUPM scoped registry once in your project's `Packages/manifest.json`.
+
+```json
+{
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.jeomseon"
+      ]
+    }
+  ],
+  "dependencies": {
+    "com.jeomseon.unity.vfx": "0.4.0"
+  }
+}
+```
+
+## Install via Git URL
+
+Enter the following URL in Unity Package Manager's `Install package from git URL`.
 
 ```text
 https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0

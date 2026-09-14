@@ -34,8 +34,8 @@
      `InstantiatedVFXProvider` 경로는 애초에 매번 새 인스턴스라 대상이 아닙니다.**
    - **사용자 컴포넌트는 VFX 전용 훅을 새로 만들지 않고 GameObjectPooling이 이미 제공하는
      `IPoolGetHandler`/`IPoolReleaseHandler`를 그대로 재사용하는 것이 계약입니다** —
-     `UnityGameObjectPool`이 풀 Get/Release 시 자동으로 호출해줍니다(AGENTS.md: 동일 기능
-     재구현 금지). **제약**: 이 스캔은 루트의 `GetComponents<T>()`만 보고 자식은 보지 않습니다
+     `UnityGameObjectPool`이 풀 Get/Release 시 자동으로 호출해줍니다. **제약**: 이 스캔은 루트의
+     `GetComponents<T>()`만 보고 자식은 보지 않습니다
      (`PooledGameObjectState.Initialize`). `VFXInstance` 자신은 프리팹 루트에 있어야 하므로
      (`VFXConfiguration`의 프리팹 검증 조건) 문제 없지만, 리셋이 필요한 사용자 컴포넌트는
      **VFX 프리팹의 루트**에 둬야 자동 호출됩니다 — 자식에 두면 훅이 호출되지 않는다는 점을
@@ -118,7 +118,7 @@
      `IVFXHandleOwner` 등 기반 타입 공개 범위를 다시 검토할 때도 이 원칙(native C# 계약만
      노출)을 기준으로 판단합니다.
    - 관련 경로는 최종 PlayMode 16/16에 포함되어 통과했습니다.
-   - **Kilo PR 리뷰 후속 보강 (2026-08-31).** Manual Configuration도 lease마다 독립 Session을
+   - **Manual Configuration 보강 (2026-08-31).** lease마다 독립 Session을
      생성하도록 singleton Session을 제거했습니다. 사용자 Session의 `Tick()`이 예외를 던지면
      예외를 Unity Console에 기록하고 해당 VFX lease를 정리하도록 `RunLifetimeAsync`에 방어를
      추가했습니다. Instantiate 방식 Emitter 제거, Scaled 수명의 `Time.timeScale = 0`, Provider의
@@ -126,7 +126,7 @@
      추가했습니다. 생성 Unity csproj 보조 빌드는 경고·오류 0건입니다. Unity CLI Test Runner는
      샌드박스와 승인 환경 모두 Licensing Client 연결 실패로 테스트 시작 전에 중단돼 결과 XML이
      생성되지 않았습니다.
-   - **Kilo 재검토 후속 보강 (2026-08-31).** GameObjectPooling에 Pool 종료 시 활성 인스턴스를
+   - **Pool 종료 정책 보강 (2026-08-31).** GameObjectPooling에 Pool 종료 시 활성 인스턴스를
      함께 파괴하는 기본 정책과 남기는 Preserve 정책을 추가했습니다. Preserve를 선택한 VFX는 Scope
      종료 후에도 계속 살아 있고, 사용자가 `ManualVFXLifetimeConfiguration`과
      `VFXHandle.TryRelease()`로 직접 종료하면 무효 Pool Handle 대신 GameObject를 파괴합니다.

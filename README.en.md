@@ -1,16 +1,26 @@
 # Jeomseon Unity VFX
 
-A Unity package that spawns ParticleSystem effects and automatically cleans them up or returns them to a pool.
-It supports runtime code configuration and Inspector configuration through ScriptableObject assets.
+[한국어](README.md) | English
+
+Combines ParticleSystem effect creation, reuse, completion, and release with GameObjectPooling.
+
+## Quick start
+
+Put VFXInstance on the Prefab root, configure VFXConfiguration/Definition, initialize an Emitter, Spawn a VFXHandle, then complete automatically or TryRelease. Callers own external Providers unless ownership is transferred.
+
+## Contracts and limitations
+
+Choose manual, timed, or particle-completion policies. Looping particles do not finish. Stale Handles cannot affect a new reuse generation. Create an independent custom lifetime Session per Spawn.
 
 ## Requirements
 
-- Unity 6000.6.0f1 or later
-- `com.jeomseon.unity.game-object-pooling` 0.4.0 or newer (declared as a dependency in `package.json`)
+- Unity `6000.6.0f1`
+- Package: `com.jeomseon.unity.vfx` `0.4.0`
+- `com.jeomseon.unity.game-object-pooling`: `0.4.0`
 
-## Install via OpenUPM
+## Installation
 
-Register the OpenUPM scoped registry once in your project's `Packages/manifest.json`.
+Merge this into your project's `Packages/manifest.json`; preserve existing dependencies and registries.
 
 ```json
 {
@@ -29,15 +39,15 @@ Register the OpenUPM scoped registry once in your project's `Packages/manifest.j
 }
 ```
 
-## Install via Git URL
-
-Enter the following URL in Unity Package Manager's `Install package from git URL`.
+Or use **Install package from git URL** in Package Manager:
 
 ```text
 https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 ```
 
-## Main types
+## API usage and details
+
+### Main types
 
 | Type | Responsibility |
 | --- | --- |
@@ -48,7 +58,7 @@ https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 | `VFXHandle` | Safe handle for releasing, pausing, resuming, and moving a spawned effect. |
 | `IVFXLifetimeConfiguration` | Creates per-spawn state that decides when an effect is returned. |
 
-## Preparing a prefab
+### Preparing a prefab
 
 1. Add `VFXInstance` to the root GameObject of the effect prefab.
 2. Place `ParticleSystem`, `TrailRenderer`, `Animator`, and other effect components below it.
@@ -57,7 +67,7 @@ https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 
 Configuration creation or the first spawn throws when the prefab root has no `VFXInstance`.
 
-## Using a pool from code
+### Using a pool from code
 
 ```csharp
 using Jeomseon.Unity.GameObjectPooling.Configurations;
@@ -95,7 +105,7 @@ A `PoolLifetimeConfiguration.Scope` pool is disposed with its `GameObjectPoolSco
 `VFXConfiguration.Instantiate(prefab, lifetime)` to create a new instance each time without pooling. That path
 destroys the instance when released.
 
-## Configuring with ScriptableObjects
+### Configuring with ScriptableObjects
 
 1. Create a `VFXDefinition` from **Assets > Create > Jeomseon > VFX > VFX Definition**.
 2. Set `Reuse Mode` to `Pool`, then assign a `UnityGameObjectPoolDefinition` and a lifetime Definition.
@@ -109,7 +119,7 @@ the `Manual`, `Timed`, or `Particle Completion` entries under **Jeomseon > VFX >
 
 Assign both `Definition` and `Pool Scope` as shown on the `ScriptableObject Configuration` object above.
 
-## Choosing when to return an effect
+### Choosing when to return an effect
 
 | Configuration | Behavior | Best fit |
 | --- | --- | --- |
@@ -127,7 +137,7 @@ A custom implementation returns a new `IVFXLifetimeSession` for every spawn from
 each frame and is disposed exactly once on release, Emitter destruction, or Scene unload. Returning `null` rejects
 the spawn.
 
-## Controlling a spawned effect
+### Controlling a spawned effect
 
 ```csharp
 VFXHandle handle = emitter.Spawn(VFXSpawnOptions.At(position, rotation));
@@ -147,7 +157,7 @@ does not release immediately. Use `TryRelease` for immediate release.
 Do not disable or destroy the effect's internal GameObject directly. Disabling its parent also pauses completion
 checks until the parent becomes active again. Manage lifetime through `VFXHandle` and `VFXEmitter`.
 
-## Playback and reuse contract
+### Playback and reuse contract
 
 `VFXPlaybackConfiguration` controls child ParticleSystem playback, clearing before playback, clearing on release,
 and playback speed. Playback speed must be non-negative.
@@ -163,7 +173,7 @@ A Provider created by `VFXEmitter` is disposed with the Emitter, including activ
 When injecting an external Provider through `Initialize(IVFXProvider, takeOwnership: false)`, the caller owns its
 cleanup. An Emitter cannot be initialized twice.
 
-## Sample and verification
+### Sample and verification
 
 Import **Samples > Basic Usage** in Package Manager and Play the `VFXBasicUsageSample` Scene. The left side uses
 code configuration and the right side uses ScriptableObject configuration. Both repeatedly reuse the same prefab
@@ -176,7 +186,7 @@ The following were verified with Unity 6000.5.7f1:
 - Spawn, completion, and reuse in both code and ScriptableObject sample paths
 - Repeated Play/Stop with Domain Reload disabled
 
-## Changes from 0.x APIs
+### Changes from 0.x APIs
 
 - The custom `VFXPool` was removed. Use `VFXConfiguration.Pool` with `GameObjectPoolScope`.
 - `PooledVFX` was renamed to `VFXInstance`. Replace the component on the prefab root.
@@ -185,3 +195,25 @@ The following were verified with Unity 6000.5.7f1:
   a configuration that creates its own Session.
 
 See the [CHANGELOG](CHANGELOG.md) for all changes and the [ROADMAP](ROADMAP.md) for the stabilization status.
+
+## Samples
+
+Import the desired entry from **Package Manager > Samples**. Use the included Scene/Editor tool and complete its Setup step first, if required.
+
+- [Basic Usage](Samples~/BasicUsage/README.md)
+  - [VFXBasicUsageSample](Samples~/BasicUsage/VFXBasicUsageSample.unity)
+
+## Tests
+
+[Test sources](Tests)
+
+Add the package ID to manifest `testables`, then execute its relevant EditMode/PlayMode assemblies in Unity Test Runner.
+
+## Further reading
+
+[Complete source map and package metadata](Documentation~/Overview.en.md)
+- [Changelog](CHANGELOG.md)
+
+## License
+
+[License](LICENSE.md)

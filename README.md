@@ -1,16 +1,26 @@
 # Jeomseon Unity VFX
 
-ParticleSystem 효과를 생성하고, 재생이 끝난 효과를 자동으로 정리하거나 풀에 반환하는 Unity 패키지입니다.
-코드 설정과 ScriptableObject를 이용한 Inspector 설정을 모두 제공합니다.
+한국어 | [English](README.en.md)
+
+ParticleSystem 효과의 생성·재사용·완료·반환을 GameObjectPooling과 조합합니다.
+
+## 빠르게 시작하기
+
+Prefab root에 VFXInstance → VFXConfiguration 또는 Definition → Emitter 초기화 → Spawn으로 VFXHandle 획득 → 자동 완료 또는 TryRelease. 외부 Provider를 소유하지 않으면 호출자가 정리합니다.
+
+## 계약과 주의사항
+
+수동·시간·입자완료 정책을 구분합니다. 무한 반복 입자는 완료되지 않습니다. 오래된 Handle은 재사용된 새 효과를 조작하지 않습니다. 사용자 lifetime Session은 매 Spawn마다 독립 생성해야 합니다.
 
 ## 요구 사항
 
-- Unity 6000.6.0f1 이상
-- `com.jeomseon.unity.game-object-pooling` 0.4.0 이상 (`package.json`이 의존성으로 선언)
+- Unity `6000.6.0f1`
+- 패키지: `com.jeomseon.unity.vfx` `0.4.0`
+- `com.jeomseon.unity.game-object-pooling`: `0.4.0`
 
-## OpenUPM으로 설치
+## 설치
 
-프로젝트의 `Packages/manifest.json`에 OpenUPM scoped registry를 한 번 등록합니다.
+프로젝트 `Packages/manifest.json`의 기존 dependencies와 registry를 유지하면서 다음 항목을 병합합니다.
 
 ```json
 {
@@ -29,15 +39,15 @@ ParticleSystem 효과를 생성하고, 재생이 끝난 효과를 자동으로 �
 }
 ```
 
-## Git URL로 설치
-
-Unity Package Manager의 `Install package from git URL`에 다음 주소를 사용합니다.
+또는 Package Manager의 **Install package from git URL**을 사용합니다:
 
 ```text
 https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 ```
 
-## 주요 구성 요소
+## API 사용과 상세 설명
+
+### 주요 구성 요소
 
 | 이름 | 역할 |
 | --- | --- |
@@ -48,7 +58,7 @@ https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 | `VFXHandle` | 생성한 효과를 반환·일시정지·재개·이동하는 안전한 손잡이입니다. |
 | `IVFXLifetimeConfiguration` | 효과를 언제 반환할지 정하는 생성별 상태를 만듭니다. |
 
-## 프리팹 준비
+### 프리팹 준비
 
 1. 효과 프리팹의 최상단 GameObject에 `VFXInstance`를 붙입니다.
 2. 그 아래에 `ParticleSystem`, `TrailRenderer`, `Animator` 등 효과 부품을 둡니다.
@@ -58,7 +68,7 @@ https://github.com/jeomseon0516/Unity.VFX.git#v0.4.0
 
 최상단에 `VFXInstance`가 없으면 설정 생성 또는 첫 생성 시 예외가 발생합니다.
 
-## 코드에서 풀 사용
+### 코드에서 풀 사용
 
 ```csharp
 using Jeomseon.Unity.GameObjectPooling.Configurations;
@@ -96,7 +106,7 @@ public sealed class HitVFXSpawner : MonoBehaviour
 새로 만들려면 `VFXConfiguration.Instantiate(prefab, lifetime)`를 사용합니다. 이 방식은 반환할 때
 인스턴스를 파괴합니다.
 
-## ScriptableObject로 설정
+### ScriptableObject로 설정
 
 1. **Assets > Create > Jeomseon > VFX > VFX Definition**으로 `VFXDefinition`을 만듭니다.
 2. `Reuse Mode`를 `Pool`로 정하고 `UnityGameObjectPoolDefinition`과 수명 Definition을 연결합니다.
@@ -112,7 +122,7 @@ public sealed class HitVFXSpawner : MonoBehaviour
 위 화면의 `ScriptableObject Configuration` 오브젝트처럼 `VFXEmitter`의 `Definition`과 `Pool Scope`를
 함께 연결합니다.
 
-## 반환 시점 선택
+### 반환 시점 선택
 
 | 설정 | 동작 | 알맞은 경우 |
 | --- | --- | --- |
@@ -129,7 +139,7 @@ public sealed class HitVFXSpawner : MonoBehaviour
 새 `IVFXLifetimeSession`을 반환해야 합니다. Session은 매 프레임 `Tick`으로 완료 여부를 알리고,
 반환·Emitter 제거·Scene 종료 때 정확히 한 번 `Dispose`됩니다. `null`을 반환하면 생성이 거부됩니다.
 
-## 생성한 효과 다루기
+### 생성한 효과 다루기
 
 ```csharp
 VFXHandle handle = emitter.Spawn(VFXSpawnOptions.At(position, rotation));
@@ -149,7 +159,7 @@ handle.TryRelease();
 효과의 내부 GameObject를 직접 끄거나 파괴하지 마십시오. 부모를 비활성화하면 완료 확인도 부모가 다시
 활성화될 때까지 멈춥니다. 수명은 `VFXHandle`과 `VFXEmitter`를 통해 관리합니다.
 
-## 재생과 재사용 규칙
+### 재생과 재사용 규칙
 
 `VFXPlaybackConfiguration`은 자식 ParticleSystem 재생, 재생 전 입자 삭제, 반환 시 입자 삭제,
 재생 속도를 정합니다. 재생 속도는 0 이상이어야 합니다.
@@ -165,7 +175,7 @@ handle.TryRelease();
 `Initialize(IVFXProvider, takeOwnership: false)`로 외부 Provider를 넣었다면 호출자가 정리할 책임이
 있습니다. 한 Emitter를 두 번 초기화할 수 없습니다.
 
-## 샘플과 검증
+### 샘플과 검증
 
 Package Manager에서 **Samples > Basic Usage**를 Import한 뒤 `VFXBasicUsageSample` Scene을 Play합니다.
 왼쪽은 코드 설정, 오른쪽은 ScriptableObject 설정이며 둘 다 같은 프리팹을 반복해서 풀에서 꺼내고
@@ -178,7 +188,7 @@ Unity 6000.5.7f1에서 다음을 확인했습니다.
 - 코드 설정과 ScriptableObject 설정 Sample의 생성·완료·재사용 확인
 - Domain Reload를 끈 상태에서 반복 Play/Stop 확인
 
-## 0.x에서 바뀐 점
+### 0.x에서 바뀐 점
 
 - 자체 `VFXPool`을 제거했습니다. `VFXConfiguration.Pool`과 `GameObjectPoolScope`를 사용합니다.
 - `PooledVFX` 이름을 `VFXInstance`로 바꿨습니다. 프리팹 최상단 부품을 교체해야 합니다.
@@ -188,3 +198,25 @@ Unity 6000.5.7f1에서 다음을 확인했습니다.
 
 전체 변경 내용은 [CHANGELOG](CHANGELOG.md), 현재 안정화 상태는 [ROADMAP](ROADMAP.md)에서 확인할 수
 있습니다.
+
+## 샘플 실행
+
+**Package Manager > Samples**에서 예제를 Import합니다. 포함된 Scene 또는 Editor 도구를 열고 필요한 Setup 메뉴를 먼저 실행합니다.
+
+- [Basic Usage](Samples~/BasicUsage/README.md)
+  - [VFXBasicUsageSample](Samples~/BasicUsage/VFXBasicUsageSample.unity)
+
+## 테스트
+
+[테스트 코드](Tests)
+
+manifest의 `testables`에 패키지 ID를 추가하고 Unity Test Runner의 관련 EditMode/PlayMode 어셈블리를 실행합니다.
+
+## 추가 문서
+
+[전체 코드 지도와 패키지 구성](Documentation~/Overview.md)
+- [Changelog](CHANGELOG.md)
+
+## 라이선스
+
+[License](LICENSE.md)
